@@ -1,0 +1,18 @@
+  global $user;
+ $cart = commerce_cart_order_load($uid = $user->uid);
+$lineitems = array();
+foreach ($cart->commerce_line_items[LANGUAGE_NONE] as $key=>$value) {
+$lineitems[] = commerce_line_item_load($value['line_item_id']);
+}
+$products = array();
+foreach ($lineitems as $keys=>$values) {
+$products[] = commerce_product_load($values->commerce_product[LANGUAGE_NONE]['0']['product_id']);
+} 
+$order_total = '0';
+foreach ($products as $key=>$value) {
+  $order_total += $value->commerce_price[LANGUAGE_NONE]['0']['amount'];
+  if ($value->field_catalog[LANGUAGE_NONE]['0']['tid'] == '33') {
+  $order_total -= $value->commerce_price[LANGUAGE_NONE]['0']['amount'];
+  }
+}
+return $order_total == 0 || $order_total > 29999;
