@@ -1,0 +1,47 @@
+  global $user;
+ $cart = commerce_cart_order_load($uid = $user->uid);
+$lineitems = array();
+foreach ($cart->commerce_line_items[LANGUAGE_NONE] as $key=>$value) {
+$lineitems[] = commerce_line_item_load($value['line_item_id']);
+}
+$products = array();
+foreach ($lineitems as $keys=>$values) {
+$products[] = commerce_product_load($values->commerce_product[LANGUAGE_NONE]['0']['product_id']);
+} 
+$order_total = '0';
+foreach ($products as $key=>$value) {
+  $order_total += $value->commerce_price[LANGUAGE_NONE]['0']['amount'];
+/*  if ($value->field_catalog[LANGUAGE_NONE]['0']['tid'] == '33') {
+  $order_total -= $value->commerce_price[LANGUAGE_NONE]['0']['amount'];
+  }*/
+$query = new EntityFieldQuery();
+$query->entityCondition('entity_type', 'node')
+->entityCondition('bundle', 'product_display')
+->fieldCondition('field_product', 'product_id', $value->product_id, '=')
+->fieldOrderBy('field_product', 'product_id', 'ASC');
+$entity_type = 'node';
+$result = $query->execute();
+if (!empty($result[$entity_type])) {
+$entities = entity_load($entity_type, array_keys($result[$entity_type]));
+}
+$nodes = entity_load('node', array_keys($result['node']));
+  
+	foreach ($nodes as $product_display_node) {
+		if ($product_display_node->field_free_shipping[LANGUAGE_NONE][0]['value'] == '1') {
+		$order_total -= $value->commerce_price[LANGUAGE_NONE]['0']['amount'];
+		}
+	} 
+  
+
+}
+
+drupal_set_message($order_total);
+
+
+//dpm($nodes);
+  
+  
+ 
+
+//dpm($products);
+return $order_total == 0 || $order_total > 29999;
